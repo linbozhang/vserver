@@ -99,6 +99,26 @@
                 }
             }
         },
+        "/app_info/app_list/": {
+            "get": {
+                "tags": [
+                    "app_info"
+                ],
+                "description": "get AppInfo by developer id",
+                "operationId": "AppInfoController.Get AppList",
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.AppInfo"
+                        }
+                    },
+                    "403": {
+                        "description": ":id is empty"
+                    }
+                }
+            }
+        },
         "/app_info/{id}": {
             "get": {
                 "tags": [
@@ -614,6 +634,35 @@
                     },
                     "403": {
                         "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/users/name/{name}": {
+            "get": {
+                "tags": [
+                    "users"
+                ],
+                "description": "get Users by name",
+                "operationId": "UsersController.Get One Name",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "name",
+                        "description": "The key for staticblock",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Users"
+                        }
+                    },
+                    "403": {
+                        "description": ":name is empty"
                     }
                 }
             }

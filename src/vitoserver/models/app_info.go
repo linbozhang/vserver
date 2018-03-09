@@ -11,7 +11,7 @@ import (
 )
 
 type AppInfo struct {
-	Id          int       `orm:"column(id);pk"`
+	Id          int       `orm:"column(id);pk;auto"`
 	AppName     string    `orm:"column(app_name);size(100)"`
 	VersionId   string    `orm:"column(version_id);size(20)"`
 	VersionCode int16     `orm:"column(version_code)"`
@@ -48,7 +48,17 @@ func GetAppInfoById(id int) (v *AppInfo, err error) {
 	}
 	return nil, err
 }
+func GetAppListByDevId(devid int)(ml []AppInfo,err error){
+	o:=orm.NewOrm()
+	var list [] AppInfo
+	_,err1:=o.QueryTable("app_info").Filter("user_id",devid).All(&list)
+	if err1==nil{
+		return list,nil
+	}
+	err=err1
+	return nil,err
 
+}
 // GetAllAppInfo retrieves all AppInfo matches certain condition. Returns empty list if
 // no records exist
 func GetAllAppInfo(query map[string]string, fields []string, sortby []string, order []string,

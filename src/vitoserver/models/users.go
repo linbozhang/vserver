@@ -10,7 +10,7 @@ import (
 )
 
 type Users struct {
-	Id              int    `orm:"column(id);pk"`
+	Id              int    `orm:"column(id);pk;auto"`
 	UserName        string `orm:"column(user_name);size(100)"`
 	UserPwd         string `orm:"column(user_pwd);size(100)"`
 	UserNick        string `orm:"column(user_nick);size(100);null"`
@@ -47,9 +47,19 @@ func GetUsersById(id int) (v *Users, err error) {
 }
 
 func GetUsersByName(name string) (v *Users,err error){
-	o:= orm.NewOrm();
-	v=&Users{Id:1001}
-	if err = o.Read(v); err==nil{
+	o:= orm.NewOrm()
+	v=&Users{}
+	err = o.QueryTable("users").Filter("user_name",name).One(v)	
+	if(err ==orm.ErrMultiRows){		
+		fmt.Printf("Not row found")
+		return nil,err
+	}
+	if(err == orm.ErrNoRows){
+		fmt.Printf("Not row found")
+		return nil,err
+	}
+	
+	if err==nil{
 		return v,nil
 	}
 	return nil,err

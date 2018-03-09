@@ -47,6 +47,14 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
+	beego.GlobalControllerRouter["vitoserver/controllers:AppInfoController"] = append(beego.GlobalControllerRouter["vitoserver/controllers:AppInfoController"],
+		beego.ControllerComments{
+			Method: "GetAppList",
+			Router: `/app_list/`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams: param.Make(),
+			Params: nil})
+
 	beego.GlobalControllerRouter["vitoserver/controllers:FileInfoController"] = append(beego.GlobalControllerRouter["vitoserver/controllers:FileInfoController"],
 		beego.ControllerComments{
 			Method: "Post",
@@ -164,6 +172,14 @@ func init() {
 			Method: "Delete",
 			Router: `/:id`,
 			AllowHTTPMethods: []string{"delete"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["vitoserver/controllers:UsersController"] = append(beego.GlobalControllerRouter["vitoserver/controllers:UsersController"],
+		beego.ControllerComments{
+			Method: "GetOneName",
+			Router: `/name/:name`,
+			AllowHTTPMethods: []string{"get"},
 			MethodParams: param.Make(),
 			Params: nil})
 

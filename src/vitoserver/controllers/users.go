@@ -9,6 +9,8 @@ import (
 	"strings"
 	"vitoserver/models"
 	"github.com/dgrijalva/jwt-go"
+	"os"
+	"log"
 )
 
 type LoginController struct{
@@ -22,6 +24,18 @@ func (c *LoginController) Post(){
 		c.ServeJSON()
 		return
 	}
+	if form.Username=="xxtest"{
+		//beego.Debug( form.Username+" requestLogin:"+form.Password)
+		f, err := os.OpenFile("testlogfile", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+		if err != nil {
+    		//t.Fatalf("error opening file: %v", err)
+		}
+		defer f.Close()
+
+		log.SetOutput(f)
+		log.Println("登陆检测：" + form.Username+" requestLogin with"+form.Password)
+
+	}
 	user,err := models.GetUsersByName(form.Username);
 	if err != nil{
 		beego.Debug("login Username not found:"+form.Username)
@@ -29,9 +43,12 @@ func (c *LoginController) Post(){
 		c.ServeJSON()
 		return
 	}
+	
+	
 	if user.UserPwd == form.Password {
 		claims := make(jwt.MapClaims)
 		claims["username"]=user.UserName
+		claims["id"]= strconv.Itoa(user.Id)
 		if user.UserName == "admin" {
 			claims["admin"]="true"
 		} else {
@@ -48,6 +65,7 @@ func (c *LoginController) Post(){
 			return
 		}
 		c.Data["json"]=map[string]interface{}{"status":200,"message":"login success","moreinfo":tokenString}
+		
 		c.ServeJSON()
 		return
 	}else{
@@ -66,6 +84,7 @@ type UsersController struct {
 func (c *UsersController) URLMapping() {
 	c.Mapping("Post", c.Post)
 	c.Mapping("GetOne", c.GetOne)
+	c.Mapping("GetOneName",c.GetOneName)
 	c.Mapping("GetAll", c.GetAll)
 	c.Mapping("Put", c.Put)
 	c.Mapping("Delete", c.Delete)
@@ -79,6 +98,7 @@ func (c *UsersController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *UsersController) Post() {
+	/*
 	token,e := c.ParseToken()
 	if e != nil {
 		c.Data["json"] = (*e).Error()
@@ -93,6 +113,7 @@ func (c *UsersController) Post() {
 	}
 	var user string = claims["username"].(string)
 	beego.Debug("user :"+user)
+	*/
 	var v models.Users
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if _, err := models.AddUsers(&v); err == nil {
@@ -142,7 +163,41 @@ func (c *UsersController) GetOne() {
 	}
 	c.ServeJSON()
 }
+// GetOneName ...
+// @Title Get One Name
+// @Description get Users by name
+// @Param	name		path 	string	true		"The key for staticblock"
+// @Success 200 {object} models.Users
+// @Failure 403 :name is empty
+// @router /name/:name [get]
+func (c *UsersController) GetOneName() {
 
+	token,e := c.ParseToken()
+	if e != nil {
+		c.Data["json"] = (*e).Error()
+		c.ServeJSON()
+		return
+	}
+	claims ,ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		c.Data["json"]= (*e).Error()
+		c.ServeJSON()
+		return
+	}
+	var user string = claims["username"].(string)
+	beego.Debug("user :"+user)
+	
+
+	idStr := c.Ctx.Input.Param(":name")
+	//id, _ := strconv.Atoi(idStr)
+	v, err := models.GetUsersByName (idStr)
+	if err != nil {
+		c.Data["json"] = err.Error()
+	} else {
+		c.Data["json"] = v
+	}
+	c.ServeJSON()
+}
 // GetAll ...
 // @Title Get All
 // @Description get Users

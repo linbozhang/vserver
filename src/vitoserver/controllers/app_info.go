@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"fmt"
+	"time"
 	"encoding/json"
 	"errors"
 	"strconv"
 	"strings"
 	"vitoserver/models"
-
+	"github.com/dgrijalva/jwt-go"
 )
 
 // AppInfoController operations for AppInfo
@@ -21,6 +23,7 @@ func (c *AppInfoController) URLMapping() {
 	c.Mapping("GetAll", c.GetAll)
 	c.Mapping("Put", c.Put)
 	c.Mapping("Delete", c.Delete)
+	c.Mapping("GetAppList",c.GetAppList)
 }
 
 // Post ...
@@ -31,8 +34,26 @@ func (c *AppInfoController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [post]
 func (c *AppInfoController) Post() {
+	token,e := c.ParseToken()
+	if e != nil {
+		c.Data["json"] = (*e).Error()
+		c.ServeJSON()
+		return
+	}
+	claims ,ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		c.Data["json"]= (*e).Error()
+		c.ServeJSON()
+		return
+	}
+	//var user string = claims["username"].(string)
+	userid:=claims["id"].(string)
 	var v models.AppInfo
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
+		id, _ := strconv.Atoi(userid)
+		v.UserId=id
+		v.CreateDate=time.Now()
+		v.UpdateDate=time.Now()
 		if _, err := models.AddAppInfo(&v); err == nil {
 			c.Ctx.Output.SetStatus(201)
 			c.Data["json"] = v
@@ -56,6 +77,40 @@ func (c *AppInfoController) GetOne() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.Atoi(idStr)
 	v, err := models.GetAppInfoById(id)
+	if err != nil {
+		c.Data["json"] = err.Error()
+	} else {
+		c.Data["json"] = v
+	}
+	c.ServeJSON()
+}
+
+// GetAppList ...
+// @Title Get AppList
+// @Description get AppInfo by developer id 
+// @Success 200 {object} models.AppInfo
+// @Failure 403 :id is empty
+// @router /app_list/ [get]
+func (c *AppInfoController) GetAppList() {
+
+	token,e := c.ParseToken()
+	if e != nil {
+		c.Data["json"] = (*e).Error()
+		c.ServeJSON()
+		return
+	}
+	claims ,ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		c.Data["json"]= (*e).Error()
+		c.ServeJSON()
+		return
+	}
+
+	//var user string = claims["username"].(string)
+	userid:=claims["id"].(string)
+	devid, _ := strconv.Atoi(userid)
+	fmt.Println("developer id is:",devid)
+	v, err := models.GetAppListByDevId(devid)
 	if err != nil {
 		c.Data["json"] = err.Error()
 	} else {
